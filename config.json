@@ -1,0 +1,5 @@
+{
+	"src": "./src/",
+	"tgt": "./tgt/",
+	"preserve_folder_hierarchy": false
+}
