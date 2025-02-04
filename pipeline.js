@@ -32,19 +32,14 @@ function readDirectory(dir, fileList = []) {
 config = fs.readFileSync("config.json", "utf-8");
 config = JSON.parse(config);
 
-files = readDirectory(config.src);
+input_files = readDirectory(config.src);
 
-for (const file of files) {
-	let resourcePath = getResourcePath(file);
+for (const file of input_files) {
+	let resourcePath = getResourcePath(file, config.src);
 	let inputFileParts = path.parse(file);
 	let inputDirRelative = path.relative(config.src, inputFileParts.dir);
 
-	let outputDir = "";
-	if (config.preserve_folder_hierarchy) {
-		outputDir = path.join(config.tgt, inputDirRelative, resourcePath);
-	} else {
-		outputDir = path.join(config.tgt, resourcePath);
-	}
+	let outputDir = path.join(config.tgt, resourcePath);
 
 	try {
 		fs.mkdirSync(outputDir, { recursive: true });
@@ -62,8 +57,6 @@ for (const file of files) {
 		pandoc(file, args, function(err, res) {
 			if (err) {
 				console.error(err);
-				console.log("Error occured when working on output file", outFile);
-				return;
 			}
 			
 			dom = new JSDOM(res);
