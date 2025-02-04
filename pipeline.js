@@ -32,17 +32,25 @@ function readDirectory(dir, fileList = []) {
 config = fs.readFileSync("config.json", "utf-8");
 config = JSON.parse(config);
 
-input_files = readDirectory(config.src);
+inputFiles = readDirectory(config.src);
+outputFiles = []
 
-for (const file of input_files) {
+for (const file of inputFiles) {
 	let resourcePath = getResourcePath(file, config.src);
 	let inputFileParts = path.parse(file);
 	let inputDirRelative = path.relative(config.src, inputFileParts.dir);
 
 	let outputDir = path.join(config.tgt, resourcePath);
+	let outputFile = path.join(outputDir, "index.html");
 
+	outputFiles.push(outputFile);
+	console.log(`${file} ----> ${outputFile}`);
+}
+
+
+for (let i = 0; i < inputFiles.length; i++) {
 	try {
-		fs.mkdirSync(outputDir, { recursive: true });
+		fs.mkdirSync(path.parse(outputFiles[i]).dir, { recursive: true });
 	} catch(err) {
 		if (err.code != 'EEXIST') {
 			console.error(err);
@@ -50,11 +58,10 @@ for (const file of input_files) {
 		}
 	}
 
-	let outputFile = path.join(outputDir, "index.html");
 
 	let args = "-s --katex --no-highlight --template=template/default.html";
 	(function (outFile) {
-		pandoc(file, args, function(err, res) {
+		pandoc(inputFiles[i], args, function(err, res) {
 			if (err) {
 				console.error(err);
 			}
@@ -93,5 +100,5 @@ for (const file of input_files) {
 			formattedHtml = dom.serialize();
 			fs.writeFileSync(outFile, formattedHtml);
 		});
-	})(outputFile);
+	})(outputFiles[i]);
 }
