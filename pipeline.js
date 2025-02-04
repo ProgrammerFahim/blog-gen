@@ -70,7 +70,15 @@ for (const file of files) {
 
 			// format code
 			codeBlocks = dom.window.document.querySelectorAll("pre code");
-			codeBlocks.forEach(hljs.highlightElement);
+			if (codeBlocks.length > 0) {
+				codeBlocks.forEach(hljs.highlightElement);
+
+				// Insert link to code stylesheet
+				codeLink = dom.window.document.createElement("link");
+				codeLink.rel = "stylesheet";
+				codeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css";
+				dom.window.document.head.appendChild(codeLink);
+			}
 
 			// format math
 			document = dom.window.document;
