@@ -14,6 +14,22 @@ const hljs = require("highlight.js");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
+function needsRegeneration(inputPath, outputPath) {
+    const inputStats = fs.statSync(inputPath);
+
+    try {
+        const outputStats = fs.statSync(outputPath);
+
+        return inputStats.mtimeMs > (outputStats.mtimeMs + 1000);
+    } catch (outputError) {
+        if (outputError.code == 'ENOENT') {
+            return true;
+        }
+
+        throw outputError;
+    }
+}
+
 function readDirectory(dir, fileList = []) {
     const listing = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -48,6 +64,11 @@ for (const file of inputFiles) {
 
 
 for (let i = 0; i < inputFiles.length; i++) {
+    if (!needsRegeneration(inputFiles[i], outputFiles[i])) {
+        console.log(`Output of ${inputFiles[i]} is already at latest state ${outputFiles[i]}`);
+        continue;
+    }
+
     try {
         fs.mkdirSync(path.parse(outputFiles[i]).dir, { recursive: true });
     } catch(err) {
@@ -98,6 +119,7 @@ for (let i = 0; i < inputFiles.length; i++) {
             // write file to output
             formattedHtml = dom.serialize();
             fs.writeFileSync(outFile, formattedHtml);
+            console.log(`Generated ${outFile}`);
         });
     })(outputFiles[i]);
 }
